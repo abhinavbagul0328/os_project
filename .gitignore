@@ -1,0 +1,26 @@
+# Environments
+.venv
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models and large datasets
+pcb_pipeline/output/
+# We will explicitly ignore data_pro so it's not uploaded to GitHub
+data_pro/
+
+# IDEs and Tools
+.vscode/
+.idea/
+.spyderproject
+.ropeproject
+.code-review-graph/
+.kiro/
+.claude/
