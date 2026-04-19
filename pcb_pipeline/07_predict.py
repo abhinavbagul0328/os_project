@@ -62,26 +62,19 @@ def load_all_roi_models():
                 pass
     return models
 
-def main():
-    parser = argparse.ArgumentParser(description="Predict if a PCB image is clean or faulty based on distinct ROI models.")
-    parser.add_argument("--image", required=True, help="Path to the image to analyze")
-    parser.add_argument("--visualize", action="store_true", help="Show an image with overlayed ROIs")
-    args = parser.parse_args()
-    
-    img_path = args.image
+def predict_image(img_path, roi_models=None):
     if not os.path.exists(img_path):
-        print(f"Error: Image not found at {img_path}")
-        return
+        return None, False, [], f"Error: Image not found at {img_path}"
         
     roi_data_path = os.path.join(OUTPUT_DIR, "roi_coordinates.json")
     if not os.path.exists(roi_data_path):
-        print("Error: Missing ROI coordinates.")
-        return
+        return None, False, [], "Error: Missing ROI coordinates."
         
-    roi_models = load_all_roi_models()
+    if roi_models is None:
+        roi_models = load_all_roi_models()
+        
     if not roi_models:
-        print("Error: No localized ROI models found. Run step 5 first.")
-        return
+        return None, False, [], "Error: No localized ROI models found. Run step 5 first."
         
     # Load ROIs
     roi_data = load_json(roi_data_path)
@@ -90,10 +83,9 @@ def main():
     # Load Image
     img_rgb = load_image(img_path)
     if img_rgb is None:
-        print("Failed to load image.")
-        return
+        return None, False, [], "Failed to load image."
         
-    print(f"Analyzing {os.path.basename(img_path)} against {len(rois)} distinct ROI models...")
+    output_log = f"Analyzing {os.path.basename(img_path)} against {len(rois)} distinct ROI models...\n"
     
     img_is_faulty = False
     roi_results = []
@@ -104,7 +96,7 @@ def main():
         
         cropped_rgb = crop_roi(img_rgb, x1, y1, x2, y2)
         if cropped_rgb is None:
-            print(f"ROI {r_id} out of bounds.")
+            output_log += f"ROI {r_id} out of bounds.\n"
             continue
             
         cropped_bgr = cv2.cvtColor(cropped_rgb, cv2.COLOR_RGB2BGR)
@@ -112,7 +104,7 @@ def main():
         
         # Check if we have a model for this specific ROI
         if r_id not in roi_models:
-            print(f"  ROI {r_id:02d}: SKIPPED (No dedicated model found)")
+            output_log += f"  ROI {r_id:02d}: SKIPPED (No dedicated model found)\n"
             continue
             
         model_data = roi_models[r_id]
@@ -126,11 +118,11 @@ def main():
         
         # Give 10x weight to average_pixel_value_rgb
         avg_pixel_idx = feature_names.index("average_pixel_value_rgb")
-        vector_scaled[0, avg_pixel_idx] *= 10000.0
+        vector_scaled[0, avg_pixel_idx] *= 1000.0
         
         pred_cluster = kmeans.predict(vector_scaled)[0]
         
-        is_faulty = (pred_cluster == faulty_cluster)
+        is_faulty = bool(pred_cluster == faulty_cluster)
         if is_faulty:
             img_is_faulty = True
             
@@ -139,11 +131,25 @@ def main():
         })
         
         status = "FAULTY" if is_faulty else "CLEAN"
-        print(f"  ROI {r_id:02d}: {status}")
+        output_log += f"  ROI {r_id:02d}: {status}\n"
 
-    print("\n" + "="*30)
-    print(f"FINAL DECISION: {'FAULTY (NG)' if img_is_faulty else 'CLEAN (OK)'}")
-    print("="*30)
+    output_log += "\n" + "="*30 + "\n"
+    output_log += f"FINAL DECISION: {'FAULTY (NG)' if img_is_faulty else 'CLEAN (OK)'}\n"
+    output_log += "="*30 + "\n"
+    
+    return img_rgb, img_is_faulty, roi_results, output_log
+
+def main():
+    parser = argparse.ArgumentParser(description="Predict if a PCB image is clean or faulty based on distinct ROI models.")
+    parser.add_argument("--image", required=True, help="Path to the image to analyze")
+    parser.add_argument("--visualize", action="store_true", help="Show an image with overlayed ROIs")
+    args = parser.parse_args()
+    
+    img_rgb, img_is_faulty, roi_results, output_log = predict_image(args.image)
+    print(output_log)
+    if img_rgb is None:
+        return
+
 
     if args.visualize:
         fig, ax = plt.subplots(figsize=(12, 8))

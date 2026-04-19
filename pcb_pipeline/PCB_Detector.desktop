@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=PCB Anomaly Detector
+Comment=Execute the 7-step PCB Pipeline
+Exec=sh -c "cd /home/doctor/OS/cp/pcb_pipeline && /home/doctor/mlcore/bin/python main_app.py"
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Utility;Development;
