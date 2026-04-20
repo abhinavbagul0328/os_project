@@ -42,18 +42,18 @@ PIPELINE_STEPS = {
     10: ("Export Results Metadata", "10_export_results.py")
 }
 
-# --- STYLESHEET (Professional Cream & Peach Theme) ---
+# --- STYLESHEET (Professional Light Grey Theme) ---
 APP_STYLE = """
 QMainWindow {
-    background-color: #FFF0E5;
+    background-color: #F5F5F5;
 }
 QLabel {
-    color: #5C4033;
+    color: #333333;
     font-weight: bold;
 }
 QPushButton {
-    background-color: #FFCCB6;
-    color: #5C4033;
+    background-color: #E0E0E0;
+    color: #333333;
     border: none;
     border-radius: 8px;
     padding: 10px;
@@ -62,27 +62,27 @@ QPushButton {
     padding-left: 15px;
 }
 QPushButton:hover {
-    background-color: #FFB39A;
+    background-color: #D0D0D0;
 }
 QPushButton:pressed {
-    background-color: #FF9A76;
-    color: #FFFFFF;
+    background-color: #BDBDBD;
+    color: #111111;
 }
 QPushButton:disabled {
-    background-color: #FFEBDF;
+    background-color: #EEEEEE;
     color: #A0A0A0;
 }
 QTextEdit {
     background-color: #FFFFFF;
-    color: #333333;
-    border: 2px solid #FFCCB6;
+    color: #1E1E1E;
+    border: 2px solid #CCCCCC;
     border-radius: 8px;
     padding: 10px;
     font-family: monospace;
 }
 QFrame#canvas_container {
     background-color: #FFFFFF;
-    border: 2px solid #FFCCB6;
+    border: 2px solid #CCCCCC;
     border-radius: 8px;
 }
 """
@@ -160,7 +160,7 @@ class PCBPipelineApp(QMainWindow):
         
         title_label = QLabel("ANOMALY PIPELINE")
         title_label.setFont(QFont("Arial", 16, QFont.Bold))
-        title_label.setStyleSheet("color: #FF9A76; margin-bottom: 10px;")
+        title_label.setStyleSheet("color: #4A4A4A; margin-bottom: 10px;")
         left_panel.addWidget(title_label)
         
         self.buttons = {}
@@ -175,14 +175,14 @@ class PCBPipelineApp(QMainWindow):
         
         # Save selection button specific for Step 2
         self.btn_save_rois = QPushButton("Save Embedded ROI Selection")
-        self.btn_save_rois.setStyleSheet("background-color: #A0D8B3; color: #5C4033;")
+        self.btn_save_rois.setStyleSheet("background-color: #B0C4DE; color: #333333;")
         self.btn_save_rois.clicked.connect(self.save_embedded_rois)
         self.btn_save_rois.hide()
         left_panel.addWidget(self.btn_save_rois)
 
         # Next button specific for Step 8
         self.btn_next_feedback = QPushButton("Save & Next Image ->")
-        self.btn_next_feedback.setStyleSheet("background-color: #A0D8B3; color: #5C4033;")
+        self.btn_next_feedback.setStyleSheet("background-color: #B0C4DE; color: #333333;")
         self.btn_next_feedback.clicked.connect(self.next_feedback_image)
         self.btn_next_feedback.hide()
         left_panel.addWidget(self.btn_next_feedback)
@@ -201,7 +201,7 @@ class PCBPipelineApp(QMainWindow):
         canvas_layout = QVBoxLayout(canvas_container)
         
         self.toolbar = NavigationToolbar(self.canvas, self)
-        self.toolbar.setStyleSheet("background-color: #FFCCB6; color: #5C4033;")
+        self.toolbar.setStyleSheet("background-color: #E0E0E0; color: #333333;")
         canvas_layout.addWidget(self.toolbar)
         
         canvas_layout.addWidget(self.canvas)
@@ -259,9 +259,9 @@ class PCBPipelineApp(QMainWindow):
         self.figure.clear()
         self.ax = self.figure.add_subplot(111)
         self.ax.imshow(img)
-        self.ax.set_title(f"ROI Selection: {target_image_name}\nDraw boxes. Click 'Save' when done.", color='#5C4033')
-        self.figure.patch.set_facecolor('#FFF0E5')
-        self.ax.tick_params(colors='#5C4033')
+        self.ax.set_title(f"ROI Selection: {target_image_name}\nDraw boxes. Click 'Save' when done.", color='#333333')
+        self.figure.patch.set_facecolor('#F5F5F5')
+        self.ax.tick_params(colors='#333333')
         
         self.roi_selector_obj = step02.ROISelector(self.ax, target_image_name)
         self.canvas.draw()
@@ -317,8 +317,8 @@ class PCBPipelineApp(QMainWindow):
             
             title_color = '#D9534F' if img_is_faulty else '#5CB85C'
             self.ax.set_title(f"Prediction: {'FAULTY (NG)' if img_is_faulty else 'CLEAN (OK)'}", color=title_color, weight='bold')
-            self.figure.patch.set_facecolor('#FFF0E5')
-            self.ax.tick_params(colors='#5C4033')
+            self.figure.patch.set_facecolor('#F5F5F5')
+            self.ax.tick_params(colors='#333333')
             
             for res in roi_results:
                 color = '#D9534F' if res["faulty"] else '#5CB85C'
@@ -395,9 +395,9 @@ class PCBPipelineApp(QMainWindow):
         self.figure.clear()
         self.ax = self.figure.add_subplot(111)
         self.ax.imshow(img_rgb)
-        self.ax.set_title(f"Review: {os.path.basename(img_path)}\nCLICK any ROI to flip its state from OK to NG (or vice versa)", color='#5C4033', weight='bold')
-        self.figure.patch.set_facecolor('#FFF0E5')
-        self.ax.tick_params(colors='#5C4033')
+        self.ax.set_title(f"Review: {os.path.basename(img_path)}\nCLICK any ROI to flip its state from OK to NG (or vice versa)", color='#333333', weight='bold')
+        self.figure.patch.set_facecolor('#F5F5F5')
+        self.ax.tick_params(colors='#333333')
 
         # Hook it into the feedback click-listener system
         self.feedback_selector_obj = step08.FeedbackSelector(self.canvas, self.ax, img_path, roi_results)
